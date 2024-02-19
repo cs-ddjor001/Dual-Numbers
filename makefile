@@ -4,34 +4,41 @@ CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wpedantic -fsanitize=address,undefined
 CPPFLAGS := -MMD -MP
 
-# Source files for the main program (excluding test files)
-MAIN_SOURCES := $(wildcard *.cpp)
-MAIN_SOURCES := $(filter-out $(TESTPROG).cpp,$(MAIN_SOURCES))
-MAIN_OBJECTS := $(MAIN_SOURCES:.cpp=.o)
-DEPS := $(MAIN_OBJECTS:.o=.d)
+# Explicitly set source files for each program
+MAIN_SOURCES := Duals.cpp
+TEST_SOURCES := TestDuals.cpp
 
-# Source files for the test program
-TEST_SOURCES := $(filter-out $(MAINPROG).cpp,$(wildcard *.cpp))
+# Object files for each program
+MAIN_OBJECTS := $(MAIN_SOURCES:.cpp=.o)
 TEST_OBJECTS := $(TEST_SOURCES:.cpp=.o)
-TEST_DEPS := $(TEST_OBJECTS:.o=.d)
+
+# Dependency files for include header tracking
+DEPS := $(MAIN_OBJECTS:.o=.d) $(TEST_OBJECTS:.o=.d)
 
 .PHONY: all clean test
 
+# Default target builds the main program
 all: $(MAINPROG)
 
+# Test target builds and runs the test program
+test: $(TESTPROG)
+
+# Rule to link the main program executable
 $(MAINPROG): $(MAIN_OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-test: $(TESTPROG)
-
+# Rule to link the test program executable and run it
 $(TESTPROG): $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 	./$(TESTPROG)
 
--include $(DEPS) $(TEST_DEPS)
+# Include the dependency files
+-include $(DEPS)
 
+# Rule to compile source files into object files
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
+# Clean target for removing build artifacts
 clean:
-	rm -f $(MAIN_OBJECTS) $(TEST_OBJECTS) $(DEPS) $(TEST_DEPS) $(MAINPROG) $(TESTPROG)
+	rm -f $(MAIN_OBJECTS) $(TEST_OBJECTS) $(DEPS) $(MAINPROG) $(TESTPROG)

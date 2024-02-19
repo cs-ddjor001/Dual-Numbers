@@ -15,6 +15,7 @@ template<typename T> Duals<T> operator*(const Duals<T>& u, const Duals<T>& v);
 template<typename T> Duals<T> operator/(const Duals<T>& u, const Duals<T>& v);
 template<typename T> Duals<T> sin(const Duals<T>& d);
 template<typename T> Duals<T> cos(const Duals<T>& d);
+template<typename T> Duals<T> pow(const Duals<T>& d, double p);
 template<typename T> std::ostream& operator<<(std::ostream& outs, const Duals<T>& d);
 
 template<typename T>
@@ -42,6 +43,7 @@ public:
     friend Duals<T> operator/ <T>(const Duals<T>& u, const Duals<T>& v);
     friend Duals<T> sin <T>(const Duals<T>& d);
     friend Duals<T> cos <T>(const Duals<T>& d);
+    friend Duals<T> pow <T>(const Duals<T>& d, double p);
     friend std::ostream& operator<< <T>(std::ostream& outs, const Duals<T>& d);
 };
 
@@ -91,5 +93,12 @@ Duals<T> cos(const Duals<T>& d)
 {
     return Duals<T>(std::cos(d.value), -d.deriv * std::sin(d.value));
 }
+
+template<typename T>
+Duals<T> pow(const Duals<T>& d, double p)
+{
+    return Duals<T>(std::pow(d.value, p), p * d.deriv * std::pow(d.value, p-1));
+}
+
 
 #endif // DUALS_H

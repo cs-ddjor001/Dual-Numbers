@@ -5,7 +5,7 @@ using namespace std;
 int main() {
     // Test basic construction
     Duals<double> a(5.0, 1.0); // Represents the number 5 with a derivative of 1
-    Duals<double> b(3.0, 2.0); // Represents the number 3 with a derivative of 0
+    Duals<double> b(3.0, 1.0); // Represents the number 3 with a derivative of 1
 
     // Test arithmetic operations
     auto sum = a + b;
@@ -31,6 +31,12 @@ int main() {
     Duals<double> d(M_PI / 4, 1); // pi/4, derivative 1
     auto composedFunction = sin(d * d);
     cout << "Sin((pi/4)^2): " << composedFunction << endl;
+
+    Duals<int> x (5, 1);
+
+    Duals<int> f = pow(x, 2);
+
+    cout << "Derivative of F wrt x = " << f.getDerivative() << endl;
 
     return 0;
 }
