@@ -1,16 +1,37 @@
-MAINPROG=DualNumbers
+MAINPROG := DualNumbers
+TESTPROG := TestDuals
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -Wpedantic -fsanitize=address,undefined
+CPPFLAGS := -MMD -MP
 
-SOURCES:=$(wildcard *.cpp)
-OBJECTS=$(SOURCES:.cpp=.o)
-FLAGS=-std=c++17 -fsanitize=leak,address -Wall -Wpedantic -fuse-ld=gold
+# Source files for the main program (excluding test files)
+MAIN_SOURCES := $(wildcard *.cpp)
+MAIN_SOURCES := $(filter-out $(TESTPROG).cpp,$(MAIN_SOURCES))
+MAIN_OBJECTS := $(MAIN_SOURCES:.cpp=.o)
+DEPS := $(MAIN_OBJECTS:.o=.d)
 
-all: $(SOURCES) $(MAINPROG)
+# Source files for the test program
+TEST_SOURCES := $(filter-out $(MAINPROG).cpp,$(wildcard *.cpp))
+TEST_OBJECTS := $(TEST_SOURCES:.cpp=.o)
+TEST_DEPS := $(TEST_OBJECTS:.o=.d)
 
-$(MAINPROG): $(OBJECTS)
-	g++ $(FLAGS) $(OBJECTS) -o $@
+.PHONY: all clean test
 
-.cpp.o:
-	g++ $(FLAGS) -c $< -o $@
+all: $(MAINPROG)
+
+$(MAINPROG): $(MAIN_OBJECTS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+test: $(TESTPROG)
+
+$(TESTPROG): $(TEST_OBJECTS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+	./$(TESTPROG)
+
+-include $(DEPS) $(TEST_DEPS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 clean:
-	rm *.o $(MAINPROG)
+	rm -f $(MAIN_OBJECTS) $(TEST_OBJECTS) $(DEPS) $(TEST_DEPS) $(MAINPROG) $(TESTPROG)

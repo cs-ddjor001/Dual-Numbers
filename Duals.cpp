@@ -2,54 +2,35 @@
 
 using namespace std;
 
-Duals::Duals()
-{
-    this->value = 0;
-    this->deriv = 0;
-}
+int main() {
+    // Test basic construction
+    Duals<double> a(5.0, 1.0); // Represents the number 5 with a derivative of 1
+    Duals<double> b(3.0, 2.0); // Represents the number 3 with a derivative of 0
 
-Duals::Duals(double val)
-{
-    this->value = val;
-    this->deriv = 0;
-}
+    // Test arithmetic operations
+    auto sum = a + b;
+    auto difference = a - b;
+    auto product = a * b;
+    auto quotient = a / b;
 
-Duals::Duals(double val, double der)
-{
-    this->value = val;
-    this->deriv = der;
-}
+    cout << "Sum: " << sum << endl;
+    cout << "Difference: " << difference << endl;
+    cout << "Product: " << product << endl;
+    cout << "Quotient: " << quotient << endl;
 
-// following the rules of operator + for dual numbers in the meeting
-Duals operator+(const Duals& u, const Duals& v)
-{
-                    // (a+c),                   (b+d)
-    return Duals(u.value + v.value, u.deriv + v.deriv);
-}
+    // Test sin and cos functions
+    Duals<double> c(M_PI / 4, 1); // pi/4, derivative 1
+    auto sinResult = sin(c);
+    auto cosResult = cos(c);
 
-// following the rules of operator - for dual numbers in the meeting
-Duals operator-(const Duals& u, const Duals& v)
-{
-                    // (a-c),                   (b-d)
-    return Duals(u.value - v.value, u.deriv - v.deriv);
-}
+    cout << "Sin(pi/4): " << sinResult << endl;
+    cout << "Cos(pi/4): " << cosResult << endl;
 
-// following the rules of operator * for dual numbers in the meeting
-Duals operator*(const Duals& u, const Duals& v)
-{
-                    // (a*c),                   (ad+bc)
-    return Duals(u.value * v.value, (u.value * v.deriv + v.value * u.deriv));
-}
+    // Advanced test: Function composition
+    // f(x) = sin(x^2), f'(x) = 2x*cos(x^2), let x = pi/4
+    Duals<double> d(M_PI / 4, 1); // pi/4, derivative 1
+    auto composedFunction = sin(d * d);
+    cout << "Sin((pi/4)^2): " << composedFunction << endl;
 
-// following the rules of operator / for dual numbers in the meeting
-Duals operator/(const Duals& u, const Duals& v)
-{
-                    // (a/c),                   (bc - ad) / c^2
-    return Duals(u.value/v.value, (u.deriv * v.value - u.value * v.deriv) / pow(v.value, 2));
-}
-
-ostream& operator<<(ostream& outs, const Duals& d)
-{
-    outs << d.value << "\n" << d.deriv << endl;
-    return outs;
+    return 0;
 }
