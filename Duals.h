@@ -6,99 +6,90 @@
 #include <stdexcept>
 
 template<typename T>
-class Duals;
-
-// Forward declaration of the operator functions as template functions
-template<typename T> Duals<T> operator+(const Duals<T>& u, const Duals<T>& v);
-template<typename T> Duals<T> operator-(const Duals<T>& u, const Duals<T>& v);
-template<typename T> Duals<T> operator*(const Duals<T>& u, const Duals<T>& v);
-template<typename T> Duals<T> operator/(const Duals<T>& u, const Duals<T>& v);
-template<typename T> Duals<T> sin(const Duals<T>& d);
-template<typename T> Duals<T> cos(const Duals<T>& d);
-template<typename T> Duals<T> pow(const Duals<T>& d, double p);
-template<typename T> std::ostream& operator<<(std::ostream& outs, const Duals<T>& d);
-
-template<typename T>
 class Duals {
-private:
-    T value;
-    T deriv;
+    private:
+        T value;
+        T deriv;
+    public:
+        // Default constructor initializes to zero
+        Duals() : value(T()), deriv(T()) {}
 
-public:
-    // Constructors
-    Duals() : value(T()), deriv(T()) {}
-    Duals(T val) : value(val), deriv(T()) {}
-    Duals(T val, T der) : value(val), deriv(der) {}
+        // Constructor for value with zero derivative
+        Duals(T val) : value(val), deriv(T()) {}
 
-    // Getters and Setters
-    T getValue() const { return value; }
-    T getDerivative() const { return deriv; }
-    void setValue(T val) { value = val; }
-    void setDerivative(T der) { deriv = der; }
-    
-    // Friend declarations, using template instantiation syntax
-    friend Duals<T> operator+ <T>(const Duals<T>& u, const Duals<T>& v);
-    friend Duals<T> operator- <T>(const Duals<T>& u, const Duals<T>& v);
-    friend Duals<T> operator* <T>(const Duals<T>& u, const Duals<T>& v);
-    friend Duals<T> operator/ <T>(const Duals<T>& u, const Duals<T>& v);
-    friend Duals<T> sin <T>(const Duals<T>& d);
-    friend Duals<T> cos <T>(const Duals<T>& d);
-    friend Duals<T> pow <T>(const Duals<T>& d, double p);
-    friend std::ostream& operator<< <T>(std::ostream& outs, const Duals<T>& d);
+        // Constructor for both value and derivative
+        Duals(T val, T der) : value(val), deriv(der) {}
+
+        // Getter for value (for const correctness)
+        T getValue() const { return value; }
+
+        // Getter for derivative
+        T getDerivative() const { return deriv; }
+
+        // Setter for value
+        void setValue(T val) {value = val;}
+
+        // Setter for derivative
+        void setDerivative(T der) {deriv = der;}
+
+        // Operator overloads as member functions for better encapsulation
+        Duals<T> operator+(const Duals<T>& other) const 
+        {
+            return Duals<T>(value + other.value, deriv + other.deriv);
+        }
+
+        Duals<T> operator-(const Duals<T>& other) const 
+        {
+            return Duals<T>(value - other.value, deriv - other.deriv);
+        }
+
+        Duals<T> operator*(const Duals<T>& other) const 
+        {
+            return Duals<T>(value * other.value, value * other.deriv + deriv * other.value);
+        }
+
+        Duals<T> operator/(const Duals<T>& other) const 
+        {
+            if (other.value == T()) 
+            {
+                throw std::runtime_error("Division by zero in dual numbers");
+            }
+            return Duals<T>(value / other.value, (deriv * other.value - value * other.deriv) / (other.value * other.value));
+        }
+
+        // Friend function for operator<< to allow access to private members for printing
+        template<typename U>
+        friend std::ostream& operator<<(std::ostream& os, const Duals<U>& d);
 };
 
-// Operator implementations
+// Non-member functions for mathematical operations using the public interface
 template<typename T>
-Duals<T> operator+(const Duals<T>& u, const Duals<T>& v) 
+Duals<T> sin(const Duals<T>& d) 
 {
-    return Duals<T>(u.value + v.value, u.deriv + v.deriv);
+    using std::sin;
+    using std::cos;
+    return Duals<T>(sin(d.getValue()), d.getDerivative() * cos(d.getValue()));
 }
 
 template<typename T>
-Duals<T> operator-(const Duals<T>& u, const Duals<T>& v) 
+Duals<T> cos(const Duals<T>& d) 
 {
-    return Duals<T>(u.value - v.value, u.deriv - v.deriv);
-}
-
-template<typename T>
-Duals<T> operator*(const Duals<T>& u, const Duals<T>& v) 
-{
-    return Duals<T>(u.value * v.value, u.value * v.deriv + v.value * u.deriv);
-}
-
-template<typename T>
-Duals<T> operator/(const Duals<T>& u, const Duals<T>& v) 
-{
-    if (v.value == 0) {
-        throw std::runtime_error("Division by zero in dual numbers");
-    }
-    return Duals<T>(u.value / v.value, (u.deriv * v.value - u.value * v.deriv) / (v.value * v.value));
-}
-
-template<typename T>
-std::ostream& operator<<(std::ostream& outs, const Duals<T>& d) 
-{
-    outs << "Value: " << d.value << ", Derivative: " << d.deriv;
-    return outs;
-}
-
-template<typename T>
-Duals<T> sin(const Duals<T>& d)
-{
-    return Duals<T>(std::sin(d.value), d.deriv * std::cos(d.value));
-}
-
-template<typename T>
-Duals<T> cos(const Duals<T>& d)
-{
-    return Duals<T>(std::cos(d.value), -d.deriv * std::sin(d.value));
+    using std::cos;
+    using std::sin;
+    return Duals<T>(cos(d.getValue()), -d.getDerivative() * sin(d.getValue()));
 }
 
 template<typename T>
 Duals<T> pow(const Duals<T>& d, double p)
 {
-    return Duals<T>(std::pow(d.value, p), p * d.deriv * std::pow(d.value, p-1));
+    return Duals<T>(std::pow(d.getValue(), p), p * d.getDerivative() * std::pow(d.getValue(), p-1));
 }
 
+// Overload of operator<< as a non-member function
+template<typename U>
+std::ostream& operator<<(std::ostream& outs, const Duals<U>& d) 
+{
+    return outs << "Value: " << d.value << ", Derivative: " << d.deriv;
+}
 
-#endif // DUALS_H
+#endif

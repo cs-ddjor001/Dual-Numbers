@@ -32,10 +32,12 @@ int main() {
     auto composedFunction = sin(d * d);
     cout << "Sin((pi/4)^2): " << composedFunction << endl;
 
+    // Test function f as a function of x
     Duals<int> x (5, 1);
 
     Duals<int> f = pow(x, 2);
 
+    cout << "Value of F(x) = x^2 when x = 5, is  " << f.getValue() << endl;
     cout << "Derivative of F wrt x = " << f.getDerivative() << endl;
 
     return 0;
