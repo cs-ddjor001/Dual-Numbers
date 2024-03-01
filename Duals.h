@@ -57,6 +57,21 @@ class Duals {
             return Duals<T>(value / other.value, (deriv * other.value - value * other.deriv) / (other.value * other.value));
         }
 
+        bool operator==(const Duals<T>& other) const 
+        {
+            const double epsilon = 1e-9; // Example tolerance
+            return (std::abs(value - other.value) < epsilon && std::abs(deriv - other.deriv) < epsilon);
+        }
+
+
+        bool operator<(const Duals<T>& other) const 
+        {
+            if (value < other.value) return true;
+            if (value > other.value) return false;
+            return deriv < other.deriv; // Use deriv as a tiebreaker if values are equal
+        }
+
+
         // Friend function for operator<< to allow access to private members for printing
         template<typename U>
         friend std::ostream& operator<<(std::ostream& os, const Duals<U>& d);
@@ -66,23 +81,54 @@ class Duals {
 template<typename T>
 Duals<T> sin(const Duals<T>& d) 
 {
-    using std::sin;
-    using std::cos;
-    return Duals<T>(sin(d.getValue()), d.getDerivative() * cos(d.getValue()));
+    return Duals<T>(std::sin(d.getValue()), d.getDerivative() * std::cos(d.getValue()));
 }
 
 template<typename T>
 Duals<T> cos(const Duals<T>& d) 
 {
-    using std::cos;
-    using std::sin;
-    return Duals<T>(cos(d.getValue()), -d.getDerivative() * sin(d.getValue()));
+    return Duals<T>(std::cos(d.getValue()), -d.getDerivative() * std::sin(d.getValue()));
 }
 
 template<typename T>
 Duals<T> pow(const Duals<T>& d, double p)
 {
     return Duals<T>(std::pow(d.getValue(), p), p * d.getDerivative() * std::pow(d.getValue(), p-1));
+}
+
+template<typename T>
+Duals<T> exp(const Duals<T>& d)
+{
+    return Duals<T>(std::exp(d.getValue()), d.getDerivative()*std::exp(d.getValue()));
+}
+
+template<typename T>
+Duals<T> log(const Duals<T>& d)
+{
+    if (d.getValue() <= 0)
+    {
+        throw std::runtime_error("Log is undefined for values 0 or less");
+    }
+    return Duals<T>(std::log(d.getValue()), d.getDerivative()/d.getValue());
+}
+
+template<typename T>
+Duals<T> abs(const Duals<T>& d) 
+{
+    if (d.getValue() == T()) 
+    {
+        throw std::runtime_error("Derivative for the absolute value function doesn't exist at 0.");
+    }
+    int sign = d.getValue() > T() ? 1 : 1;
+    return Duals<T>(std::abs(d.getValue()), d.getDerivative() * sign);
+}
+
+
+
+template<typename T>
+Duals<T> sqrt(const Duals<T>& d)
+{
+    return Duals<T>(std::sqrt(d.getValue()), 0.5 * d.getDerivative() * std::pow(d.getValue(), -0.5));
 }
 
 // Overload of operator<< as a non-member function
