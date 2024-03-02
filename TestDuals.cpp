@@ -43,8 +43,34 @@ void testTrigonometricFunctions()
     auto resultCos = cos(c);
     assert(std::abs(resultCos.getValue() - std::sqrt(2)/2) < 1e-12 && std::abs(resultCos.getDerivative() + std::sqrt(2)/2) < 1e-12);
 
+    auto resultTan = tan(c);
+    assert(std::abs(resultTan.getValue() - 1) < 1e-12 && std::abs(resultTan.getDerivative() - 2) < 1e-12);
+
     std::cout << "Trigonometric functions tests passed." << std::endl;
 }
+
+void testInverseTrigonometricFunctions()
+{
+    // Test arcsin
+    Duals<double> d_asin(0.5, 1); // arcsin(0.5) = π/6, derivative should be 1/sqrt(1 - 0.5^2) = 2/√3
+    auto result_asin = arcsin(d_asin);
+    assert(nearlyEqual(result_asin.getValue(), M_PI / 6));
+    assert(nearlyEqual(result_asin.getDerivative(), 2 / std::sqrt(3)));
+
+    // Test arccos
+    Duals<double> d_acos(0.5, 1); // arccos(0.5) = π/3, derivative should be -1/sqrt(1 - 0.5^2) = -2/√3
+    auto result_acos = arccos(d_acos);
+    assert(nearlyEqual(result_acos.getValue(), M_PI / 3));
+    assert(nearlyEqual(result_acos.getDerivative(), -2 / std::sqrt(3)));
+
+    // Test arctan
+    Duals<double> d_atan(1, 1); // arctan(1) = π/4, derivative should be 1/(1 + 1^2) = 1/2
+    auto result_atan = arctan(d_atan);
+    assert(nearlyEqual(result_atan.getValue(), M_PI / 4));
+    assert(nearlyEqual(result_atan.getDerivative(), 0.5));
+
+    std::cout << "All inverse trigonometric function tests passed.\n";
+} 
 
 void testPowFunction() 
 {
@@ -138,6 +164,7 @@ int main()
     testLog();
     testExp();
     testComparisonOperators();
+    testInverseTrigonometricFunctions();
     std::cout << "All tests passed successfully." << std::endl;
     return 0;
 }

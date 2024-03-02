@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
+#include <compare>
 
 template<typename T>
 class Duals {
@@ -71,7 +72,6 @@ class Duals {
             return deriv < other.deriv; // Use deriv as a tiebreaker if values are equal
         }
 
-
         // Friend function for operator<< to allow access to private members for printing
         template<typename U>
         friend std::ostream& operator<<(std::ostream& os, const Duals<U>& d);
@@ -88,6 +88,43 @@ template<typename T>
 Duals<T> cos(const Duals<T>& d) 
 {
     return Duals<T>(std::cos(d.getValue()), -d.getDerivative() * std::sin(d.getValue()));
+}
+
+template<typename T>
+Duals<T> tan(const Duals<T>& d)
+{
+    if (std::cos(d.getValue()) == T())
+    {
+        throw std::runtime_error("Tangent is undefined when cos(x) = 0");
+    }
+    return Duals<T>(std::tan(d.getValue()), d.getDerivative() * 1/std::pow(std::cos(d.getValue()), 2));
+}
+
+template<typename T>
+Duals<T> arcsin(const Duals<T>& d) 
+{
+    if (d.getValue() < -1 || d.getValue() > 1) 
+    {
+        throw std::runtime_error("arcsin is undefined for values outside the range [-1, 1]");
+    }
+    return Duals<T>(std::asin(d.getValue()), d.getDerivative() * 1/std::sqrt(1 - std::pow(d.getValue(), 2)));
+}
+
+template<typename T>
+Duals<T> arccos(const Duals<T>& d) 
+{
+    if (d.getValue() < -1 || d.getValue() > 1) 
+    {
+        throw std::runtime_error("arccos is undefined for values outside the range [-1, 1]");
+    }
+    return Duals<T>(std::acos(d.getValue()), -d.getDerivative() * 1/std::sqrt(1 - std::pow(d.getValue(), 2)));
+}
+
+
+template<typename T>
+Duals<T> arctan(const Duals<T>& d)
+{
+    return Duals<T>(std::atan(d.getValue()), d.getDerivative() * 1/(1 + std::pow(d.getValue(), 2)));
 }
 
 template<typename T>
@@ -122,8 +159,6 @@ Duals<T> abs(const Duals<T>& d)
     int sign = d.getValue() > T() ? 1 : 1;
     return Duals<T>(std::abs(d.getValue()), d.getDerivative() * sign);
 }
-
-
 
 template<typename T>
 Duals<T> sqrt(const Duals<T>& d)
