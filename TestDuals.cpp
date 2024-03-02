@@ -144,11 +144,19 @@ void testComparisonOperators()
     Duals<double> d1(1.0, 2.0);
     Duals<double> d2(1.0, 2.0);
     Duals<double> d3(2.0, 3.0);
+    Duals<double> d4(2.0, 3.0);
     
     assert(d1 == d2);
-    assert(!(d1 == d3));
+    assert(d1 != d3);
     assert(d1 < d3);
-    assert(!(d3 < d1));
+    assert(d3 > d1);
+    assert(d2 < d3);
+    assert(d3 > d2);
+    assert(d3 != d2);
+    assert(d3 >= d4);
+    assert(d4 <= d3);
+    assert(d3 <= d4);
+    assert(d4 >= d3);
     
     std::cout << "testComparisonOperators passed.\n";
 }

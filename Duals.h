@@ -72,6 +72,28 @@ class Duals {
             return deriv < other.deriv; // Use deriv as a tiebreaker if values are equal
         }
 
+        bool operator>(const Duals<T>& other) const
+        {
+            if (value > other.value) return true;
+            if (value < other.value) return false;
+            return deriv > other.deriv; // Use deriv as a tiebreaker if values are equal
+        }
+
+        bool operator!=(const Duals<T>& other) const
+        {
+            return !(*this == other);
+        }
+
+        bool operator<=(const Duals<T>& other) const 
+        {
+            return *this < other || *this == other;
+        }
+
+        bool operator>=(const Duals<T>& other) const 
+        {
+            return *this > other || *this == other;
+        }
+
         // Friend function for operator<< to allow access to private members for printing
         template<typename U>
         friend std::ostream& operator<<(std::ostream& os, const Duals<U>& d);
