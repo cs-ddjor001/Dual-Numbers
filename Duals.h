@@ -4,195 +4,318 @@
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
-#include <compare>
+#include <array> // Required for handling multiple derivatives
 
-template<typename T>
-class Duals {
+#define PI 3.14159265359f
+ 
+#define EPSILON 0.001f  // for numeric derivatives calculation
+
+template<size_t NUMVARIABLES = 1, typename T = double>
+class Duals 
+{
     private:
         T value;
-        T deriv;
+        std::array<T, NUMVARIABLES> derivatives;
+
     public:
         // Default constructor initializes to zero
-        Duals() : value(T()), deriv(T()) {}
+        Duals() : value(T()), derivatives({}) {}
 
         // Constructor for value with zero derivative
-        Duals(T val) : value(val), deriv(T()) {}
+        Duals(T val) : value(val), derivatives({}) {}
 
         // Constructor for both value and derivative
-        Duals(T val, T der) : value(val), deriv(der) {}
+        Duals(T val, T der) : value(val), derivatives({der}) {}
+
+        // Constructor for value and multiple derivatives
+        Duals(T val, const std::array<T, NUMVARIABLES>& der) : value(val), derivatives(der) {}
 
         // Getter for value (for const correctness)
         T getValue() const { return value; }
 
-        // Getter for derivative
-        T getDerivative() const { return deriv; }
+        // Getter for derivative (single variable)
+        T getDerivative() const { return derivatives[0]; }
+
+        // Getter for derivative (multiple variables)
+        T getDerivative(size_t index) const 
+        {
+            if (index >= NUMVARIABLES) 
+            {
+                throw std::out_of_range("Index out of range for derivative access");
+            }
+            return derivatives[index];
+        }
+
+            // Getter for the entire array of derivatives
+        const std::array<T, NUMVARIABLES>& getAllDerivatives() const 
+        {
+            return derivatives;
+        }
 
         // Setter for value
-        void setValue(T val) {value = val;}
+        void setValue(T val) { value = val; }
 
-        // Setter for derivative
-        void setDerivative(T der) {deriv = der;}
+        // Setter for derivative (single variable)
+        void setDerivative(T der) { derivatives[0] = der; }
+
+        // Setter for derivative (multiple variables)
+        void setDerivative(size_t index, T der) 
+        {
+            if (index >= NUMVARIABLES) 
+            {
+                throw std::out_of_range("Index out of range for derivative access");
+            }
+            derivatives[index] = der;
+        }
+
+            // Setter for the entire array of derivatives
+        void setAllDerivatives(const std::array<T, NUMVARIABLES>& newDerivatives) 
+        {
+            derivatives = newDerivatives;
+        }
 
         // Operator overloads as member functions for better encapsulation
-        Duals<T> operator+(const Duals<T>& other) const 
+        Duals<NUMVARIABLES, T> operator+(const Duals<NUMVARIABLES, T>& other) const 
         {
-            return Duals<T>(value + other.value, deriv + other.deriv);
-        }
-
-        Duals<T> operator-(const Duals<T>& other) const 
-        {
-            return Duals<T>(value - other.value, deriv - other.deriv);
-        }
-
-        Duals<T> operator*(const Duals<T>& other) const 
-        {
-            return Duals<T>(value * other.value, value * other.deriv + deriv * other.value);
-        }
-
-        Duals<T> operator/(const Duals<T>& other) const 
-        {
-            if (other.value == T()) 
+            Duals<NUMVARIABLES, T> result;
+            result.value = this->value + other.value;
+            for (size_t i = 0; i < NUMVARIABLES; ++i)
             {
-                throw std::runtime_error("Division by zero in dual numbers");
+                result.derivatives[i] = this->derivatives[i] + other.derivatives[i];
             }
-            return Duals<T>(value / other.value, (deriv * other.value - value * other.deriv) / (other.value * other.value));
+            return result;
         }
 
-        bool operator==(const Duals<T>& other) const 
+        Duals<NUMVARIABLES, T> operator-(const Duals<NUMVARIABLES, T>& other) const 
         {
-            const double epsilon = 1e-9; // Example tolerance
-            return (std::abs(value - other.value) < epsilon && std::abs(deriv - other.deriv) < epsilon);
+            Duals<NUMVARIABLES, T> result;
+            result.value = this->value - other.value;
+            for (size_t i = 0; i < NUMVARIABLES; ++i)
+            {
+                result.derivatives[i] = this->derivatives[i] - other.derivatives[i];
+            }
+            return result;
         }
 
-
-        bool operator<(const Duals<T>& other) const 
+        Duals<NUMVARIABLES, T> operator*(const Duals<NUMVARIABLES, T>& other) const 
         {
-            if (value < other.value) return true;
-            if (value > other.value) return false;
-            return deriv < other.deriv; // Use deriv as a tiebreaker if values are equal
+            Duals<NUMVARIABLES, T> result;
+            result.value = this->value * other.value;
+            for (size_t i = 0; i < NUMVARIABLES; ++i)
+            {
+                result.derivatives[i] = this->value * other.derivatives[i] + this->derivatives[i] * other.value;
+            }
+            return result;
         }
 
-        bool operator>(const Duals<T>& other) const
+        Duals<NUMVARIABLES, T> operator/(const Duals<NUMVARIABLES, T>& other) const 
         {
-            if (value > other.value) return true;
-            if (value < other.value) return false;
-            return deriv > other.deriv; // Use deriv as a tiebreaker if values are equal
+            Duals<NUMVARIABLES, T> result;
+            result.value = this->value / other.value;
+            for (size_t i = 0; i < NUMVARIABLES; ++i)
+            {
+                result.derivatives[i] = (this->derivatives[i] * other.value - this->value * other.derivatives[i]) / (other.value * other.value);
+            }
+            return result;
         }
 
-        bool operator!=(const Duals<T>& other) const
+        bool operator==(const Duals<NUMVARIABLES, T>& other) const 
+        {
+           return (this->value == other.value && this->derivatives == other.derivatives);
+        }
+
+        bool operator<(const Duals<NUMVARIABLES, T>& other) const 
+        {
+            if (this->value < other.value) return true;
+            if (this->value > other.value) return false;
+            return this->derivatives < other.derivatives; // Use deriv as a tiebreaker if values are equal
+        }
+
+        bool operator>(const Duals<NUMVARIABLES, T>& other) const
+        {
+            if (this->value > other.value) return true;
+            if (this->value < other.value) return false;
+            return this->derivatives > other.derivatives; // Use deriv as a tiebreaker if values are equal
+        }
+
+        bool operator!=(const Duals<NUMVARIABLES, T>& other) const
         {
             return !(*this == other);
         }
 
-        bool operator<=(const Duals<T>& other) const 
+        bool operator<=(const Duals<NUMVARIABLES, T>& other) const 
         {
             return *this < other || *this == other;
         }
 
-        bool operator>=(const Duals<T>& other) const 
+        bool operator>=(const Duals<NUMVARIABLES, T>& other) const 
         {
             return *this > other || *this == other;
         }
 
         // Friend function for operator<< to allow access to private members for printing
-        template<typename U>
-        friend std::ostream& operator<<(std::ostream& os, const Duals<U>& d);
+        template<size_t VARIABLES, typename U>
+        friend std::ostream& operator<<(std::ostream& os, const Duals<VARIABLES, U>& d);
 };
 
 // Non-member functions for mathematical operations using the public interface
-template<typename T>
-Duals<T> sin(const Duals<T>& d) 
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> sin(const Duals<VARIABLES, U>& d) 
 {
-    return Duals<T>(std::sin(d.getValue()), d.getDerivative() * std::cos(d.getValue()));
-}
-
-template<typename T>
-Duals<T> cos(const Duals<T>& d) 
-{
-    return Duals<T>(std::cos(d.getValue()), -d.getDerivative() * std::sin(d.getValue()));
-}
-
-template<typename T>
-Duals<T> tan(const Duals<T>& d)
-{
-    if (std::cos(d.getValue()) == T())
+    Duals<VARIABLES, U> result;
+    result.setValue(std::sin(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
     {
-        throw std::runtime_error("Tangent is undefined when cos(x) = 0");
+        result.setDerivative(i, d.getDerivative(i) * std::cos(d.getValue()));
     }
-    return Duals<T>(std::tan(d.getValue()), d.getDerivative() * 1/std::pow(std::cos(d.getValue()), 2));
+    return result;
 }
 
-template<typename T>
-Duals<T> arcsin(const Duals<T>& d) 
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> cos(const Duals<VARIABLES, U>& d) 
 {
-    if (d.getValue() < -1 || d.getValue() > 1) 
+    Duals<VARIABLES, U> result;
+    result.setValue(std::cos(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
     {
-        throw std::runtime_error("arcsin is undefined for values outside the range [-1, 1]");
+        result.setDerivative(i, -d.getDerivative(i) * std::sin(d.getValue()));
     }
-    return Duals<T>(std::asin(d.getValue()), d.getDerivative() * 1/std::sqrt(1 - std::pow(d.getValue(), 2)));
+    return result;
 }
 
-template<typename T>
-Duals<T> arccos(const Duals<T>& d) 
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> tan(const Duals<VARIABLES, U>& d) 
 {
-    if (d.getValue() < -1 || d.getValue() > 1) 
+    Duals<VARIABLES, U> result;
+    result.setValue(std::tan(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
     {
-        throw std::runtime_error("arccos is undefined for values outside the range [-1, 1]");
+        result.setDerivative(i, d.getDerivative(i) / (std::cos(d.getValue()) * std::cos(d.getValue())));
     }
-    return Duals<T>(std::acos(d.getValue()), -d.getDerivative() * 1/std::sqrt(1 - std::pow(d.getValue(), 2)));
+    return result;
 }
 
-
-template<typename T>
-Duals<T> arctan(const Duals<T>& d)
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> arcsin(const Duals<VARIABLES, U>& d) 
 {
-    return Duals<T>(std::atan(d.getValue()), d.getDerivative() * 1/(1 + std::pow(d.getValue(), 2)));
+    Duals<VARIABLES, U> result;
+    result.setValue(std::asin(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, d.getDerivative(i) / std::sqrt(U(1.0) - d.getValue() * d.getValue()));
+    }
+    return result;
 }
 
-template<typename T>
-Duals<T> pow(const Duals<T>& d, double p)
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> arccos(const Duals<VARIABLES, U>& d) 
 {
-    return Duals<T>(std::pow(d.getValue(), p), p * d.getDerivative() * std::pow(d.getValue(), p-1));
+    Duals<VARIABLES, U> result;
+    result.setValue(std::acos(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, -d.getDerivative(i) / std::sqrt(U(1.0) - d.getValue() * d.getValue()));
+    }
+    return result;
 }
 
-template<typename T>
-Duals<T> exp(const Duals<T>& d)
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> arctan(const Duals<VARIABLES, U>& d) 
 {
-    return Duals<T>(std::exp(d.getValue()), d.getDerivative()*std::exp(d.getValue()));
+    Duals<VARIABLES, U> result;
+    result.setValue(std::atan(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, d.getDerivative(i) / (U(1.0) + d.getValue() * d.getValue()));
+    }
+    return result;
 }
 
-template<typename T>
-Duals<T> log(const Duals<T>& d)
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> pow(const Duals<VARIABLES, U>& d, float p)
 {
-    if (d.getValue() <= 0)
+    Duals<VARIABLES, U> result;
+    result.setValue(std::pow(d.getValue(), p));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, U(p) * d.getDerivative(i) * std::pow(d.getValue(), p - U(1.0)));
+    }
+    return result;
+}
+
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> exp(const Duals<VARIABLES, U>& d) 
+{
+    Duals<VARIABLES, U> result;
+    result.setValue(std::exp(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, d.getDerivative(i) * std::exp(d.getValue()));
+    }
+    return result;
+}
+
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> log(const Duals<VARIABLES, U>& d)
+{
+    if (d.getValue() <= U(0))
     {
         throw std::runtime_error("Log is undefined for values 0 or less");
     }
-    return Duals<T>(std::log(d.getValue()), d.getDerivative()/d.getValue());
+    Duals<VARIABLES, U> result;
+    result.setValue(std::log(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, d.getDerivative(i) / d.getValue());
+    }
+    return result;
 }
 
-template<typename T>
-Duals<T> abs(const Duals<T>& d) 
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> abs(const Duals<VARIABLES, U>& d)
 {
-    if (d.getValue() == T()) 
+    if (d.getValue() == U(0)) 
     {
         throw std::runtime_error("Derivative for the absolute value function doesn't exist at 0.");
     }
-    int sign = d.getValue() > T() ? 1 : 1;
-    return Duals<T>(std::abs(d.getValue()), d.getDerivative() * sign);
+    int sign = d.getValue() > U(0) ? 1 : -1;
+    Duals<VARIABLES, U> result;
+    result.setValue(std::abs(d.getValue()));
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, d.getDerivative(i) * sign);
+    }
+    return result;
 }
 
-template<typename T>
-Duals<T> sqrt(const Duals<T>& d)
+template<size_t VARIABLES, typename U>
+Duals<VARIABLES, U> sqrt(const Duals<VARIABLES, U>& d)
 {
-    return Duals<T>(std::sqrt(d.getValue()), 0.5 * d.getDerivative() * std::pow(d.getValue(), -0.5));
+    Duals<VARIABLES, U> result;
+    U squareRoot = std::sqrt(d.getValue());
+    result.setValue(squareRoot);
+    for (size_t i = 0; i < VARIABLES; ++i)
+    {
+        result.setDerivative(i, U(0.5) * d.getDerivative(i) / squareRoot);
+    }
+    return result;
 }
 
 // Overload of operator<< as a non-member function
-template<typename U>
-std::ostream& operator<<(std::ostream& outs, const Duals<U>& d) 
+template<size_t VARIABLES, typename U>
+std::ostream& operator<<(std::ostream& outs, const Duals<VARIABLES, U>& d) 
 {
-    return outs << "Value: " << d.value << ", Derivative: " << d.deriv;
+    outs << "Value: " << d.getValue() << ", Derivatives: [";
+    for (size_t i = 0; i < VARIABLES; ++i) 
+    {
+        outs << d.getDerivative(i);
+        if (i < VARIABLES - 1) 
+        {
+            outs << ", ";
+        }
+    }
+    outs << "]";
+    return outs;
 }
 
 #endif
