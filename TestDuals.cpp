@@ -525,6 +525,86 @@ void testMultivariableTrigFunctions()
     cout << "All multi-variable trigonometric function tests passed!" << endl;
 }
 
+void testSingleVariableMathFunctions() 
+{
+    // Test pow function
+    Duals<1, float> d_pow(2, 1);
+    Duals<1, float> result_pow = pow(d_pow, 3);
+    assert(fabs(result_pow.getValue() - pow(2, 3)) < EPSILON);
+    assert(fabs(result_pow.getDerivative() - 3 * pow(2, 2)) < EPSILON);
+
+    // Test exp function
+    Duals<1, float> d_exp(1, 1);
+    Duals<1, float> result_exp = exp(d_exp);
+    assert(fabs(result_exp.getValue() - exp(1)) < EPSILON);
+    assert(fabs(result_exp.getDerivative() - exp(1)) < EPSILON);
+
+    // Test log function
+    Duals<1, float> d_log(2, 1);
+    Duals<1, float> result_log = log(d_log);
+    assert(fabs(result_log.getValue() - log(2)) < EPSILON);
+    assert(fabs(result_log.getDerivative() - 0.5) < EPSILON);
+
+    // Test abs function
+    Duals<1, float> d_abs(-3, 1);
+    Duals<1, float> result_abs = abs(d_abs);
+    assert(fabs(result_abs.getValue() - abs(-3)) < EPSILON);
+    assert(fabs(result_abs.getDerivative() - (-1)) < EPSILON);
+
+    // Test sqrt function
+    Duals<1, float> d_sqrt(4, 1);
+    Duals<1, float> result_sqrt = sqrt(d_sqrt);
+    assert(fabs(result_sqrt.getValue() - sqrt(4)) < EPSILON);
+    assert(fabs(result_sqrt.getDerivative() - 0.25) < EPSILON);
+
+    cout << "All Single variable math function tests passed!" << endl;
+}
+
+void testMultiVariableMathFunctions() 
+{
+    // Test pow function
+    Duals<3, float> d_pow(2, {1, 2, 3});
+    Duals<3, float> result_pow = pow(d_pow, 3);
+    assert(fabs(result_pow.getValue() - pow(2, 3)) < EPSILON);
+    assert(fabs(result_pow.getDerivative(0) - 3 * pow(2, 2)) < EPSILON);
+    assert(fabs(result_pow.getDerivative(1) - 3 * 2 * pow(2, 2)) < EPSILON);
+    assert(fabs(result_pow.getDerivative(2) - 3 * 3 * pow(2, 2)) < EPSILON);
+
+    // Test exp function
+    Duals<3, float> d_exp(1, {1, 2, 3});
+    Duals<3, float> result_exp = exp(d_exp);
+    assert(fabs(result_exp.getValue() - exp(1)) < EPSILON);
+    assert(fabs(result_exp.getDerivative(0) - exp(1)) < EPSILON);
+    assert(fabs(result_exp.getDerivative(1) - 2 * exp(1)) < EPSILON);
+    assert(fabs(result_exp.getDerivative(2) - 3 * exp(1)) < EPSILON);
+
+    // Test log function
+    Duals<3, float> d_log(2, {1, 2, 3});
+    Duals<3, float> result_log = log(d_log);
+    assert(fabs(result_log.getValue() - log(2)) < EPSILON);
+    assert(fabs(result_log.getDerivative(0) - 0.5) < EPSILON);
+    assert(fabs(result_log.getDerivative(1) - 1.0) < EPSILON);
+    assert(fabs(result_log.getDerivative(2) - 1.5) < EPSILON);
+
+    // Test abs function
+    Duals<3, float> d_abs(-3, {1, 2, -3});
+    Duals<3, float> result_abs = abs(d_abs);
+    assert(fabs(result_abs.getValue() - abs(-3)) < EPSILON);
+    assert(fabs(result_abs.getDerivative(0) - (-1)) < EPSILON);
+    assert(fabs(result_abs.getDerivative(1) - (-2)) < EPSILON);
+    assert(fabs(result_abs.getDerivative(2) - (3)) < EPSILON);
+
+    // Test sqrt function
+    Duals<3, float> d_sqrt(4, {1, 2, 3});
+    Duals<3, float> result_sqrt = sqrt(d_sqrt);
+    assert(fabs(result_sqrt.getValue() - sqrt(4)) < EPSILON);
+    assert(fabs(result_sqrt.getDerivative(0) - 0.25) < EPSILON);
+    assert(fabs(result_sqrt.getDerivative(1) - 0.5 * 2 / 2) < EPSILON);
+    assert(fabs(result_sqrt.getDerivative(2) - 0.5 * 3 / 2) < EPSILON);
+
+    cout << "All Multi-variable math function tests passed!" << endl;
+}
+
 void testOutputOperatorSingleVariable() 
 {
     // Define dual numbers
@@ -565,6 +645,8 @@ int main()
     testComparisonOperatorsMultivariable();
     testTrigFunctionsSingleVariable();
     testMultivariableTrigFunctions();
+    testSingleVariableMathFunctions();
+    testMultiVariableMathFunctions();
     testOutputOperatorSingleVariable();
     testOutputOperatorMultivariable();
     return 0;
