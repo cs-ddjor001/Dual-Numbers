@@ -16,7 +16,7 @@ void TestMath(float input)
     // sqrt
     {
         // calculate value and derivative using dual numbers
-        Duals<1, float> y = Duals<1, float>(3.0f) / sqrt(x);
+        Duals<1, float> y = 3.0f / sqrt(x);
 
         // calculate numeric derivative using central differences
         float derivNumeric = ((3.0f / sqrt(input + EPSILON)) - (3.0f / sqrt(input - EPSILON))) / (2.0f * EPSILON);
@@ -114,12 +114,12 @@ void Test2D(T inputx, T inputy)
     // Calculate z = 3x^2 - 2y^3
     {
         // Calculate value and partial derivatives using dual numbers
-        Duals<2, T> z = Duals<2, T>(3.0) * x * x - Duals<2, T>(2.0) * y * y * y;
+        Duals<2, T> z = 3.0f * x * x - 2.0f * y * y * y;
 
         // Calculate numeric partial derivatives using central differences
         auto f = [](T x, T y) 
         {
-            return 3.0 * x * x - 2.0 * y * y * y;
+            return 3.0f* x * x - 2.0f * y * y * y;
         };
         T derivNumericX = (f(inputx + EPSILON, inputy) - f(inputx - EPSILON, inputy)) / (2.0 * EPSILON);
         T derivNumericY = (f(inputx, inputy + EPSILON) - f(inputx, inputy - EPSILON)) / (2.0 * EPSILON);
@@ -146,12 +146,11 @@ void Test3D(float inputx, float inputy, float inputz)
     Duals<3, float> x(inputx, {1, 0, 0}); // Setting derivative of x to 1
     Duals<3, float> y(inputy, {0, 1, 0}); // Setting derivative of y to 1
     Duals<3, float> z(inputz, {0, 0, 1}); // Setting derivative of z to 1
-    Duals<3, float> constant2(2.0f, {0, 0, 0});
 
     // w = sin(x*cos(2*y)) / tan(z)
     {
         // Calculate value and partial derivatives using dual numbers
-        Duals<3, float> w = sin(x * cos(constant2 * y)) / tan(z);
+        Duals<3, float> w = sin(x * cos(2.0f * y)) / tan(z);
 
         // Calculate numeric partial derivatives using central differences
         auto f = [](float x, float y, float z) 

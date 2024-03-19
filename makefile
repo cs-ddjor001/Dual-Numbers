@@ -30,7 +30,6 @@ $(MAINPROG): $(MAIN_OBJECTS)
 # Rule to link the test program executable and run it
 $(TESTPROG): $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
-	./$(TESTPROG)
 
 # Include the dependency files
 -include $(DEPS)

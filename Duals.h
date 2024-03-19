@@ -74,51 +74,6 @@ class Duals
             derivatives = newDerivatives;
         }
 
-        // Operator overloads as member functions for better encapsulation
-        Duals<NUMVARIABLES, T> operator+(const Duals<NUMVARIABLES, T>& other) const 
-        {
-            Duals<NUMVARIABLES, T> result;
-            result.value = this->value + other.value;
-            for (size_t i = 0; i < NUMVARIABLES; ++i)
-            {
-                result.derivatives[i] = this->derivatives[i] + other.derivatives[i];
-            }
-            return result;
-        }
-
-        Duals<NUMVARIABLES, T> operator-(const Duals<NUMVARIABLES, T>& other) const 
-        {
-            Duals<NUMVARIABLES, T> result;
-            result.value = this->value - other.value;
-            for (size_t i = 0; i < NUMVARIABLES; ++i)
-            {
-                result.derivatives[i] = this->derivatives[i] - other.derivatives[i];
-            }
-            return result;
-        }
-
-        Duals<NUMVARIABLES, T> operator*(const Duals<NUMVARIABLES, T>& other) const 
-        {
-            Duals<NUMVARIABLES, T> result;
-            result.value = this->value * other.value;
-            for (size_t i = 0; i < NUMVARIABLES; ++i)
-            {
-                result.derivatives[i] = this->value * other.derivatives[i] + this->derivatives[i] * other.value;
-            }
-            return result;
-        }
-
-        Duals<NUMVARIABLES, T> operator/(const Duals<NUMVARIABLES, T>& other) const 
-        {
-            Duals<NUMVARIABLES, T> result;
-            result.value = this->value / other.value;
-            for (size_t i = 0; i < NUMVARIABLES; ++i)
-            {
-                result.derivatives[i] = (this->derivatives[i] * other.value - this->value * other.derivatives[i]) / (other.value * other.value);
-            }
-            return result;
-        }
-
         bool operator==(const Duals<NUMVARIABLES, T>& other) const 
         {
            return (this->value == other.value && this->derivatives == other.derivatives);
@@ -157,6 +112,146 @@ class Duals
         template<size_t VARIABLES, typename U>
         friend std::ostream& operator<<(std::ostream& os, const Duals<VARIABLES, U>& d);
 };
+
+// Overloaded operator+ for addition between Duals and primitive types
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator+(const Duals<NUMVARIABLES, T>& lhs, const T& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() + rhs);
+    const auto& derivatives = lhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Overloaded operator+ for addition between primitive types and Duals
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator+(const T& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs + rhs.getValue());
+    const auto& derivatives = rhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Original operator+ for addition between two Duals remains unchanged
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator+(const Duals<NUMVARIABLES, T>& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() + rhs.getValue());
+    for (size_t i = 0; i < NUMVARIABLES; ++i)
+    {
+         result.setDerivative(i, lhs.getDerivative(i) + rhs.getDerivative(i));
+    }
+    return result;
+}
+
+// Overloaded operator- for addition between Duals and primitive types
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator-(const Duals<NUMVARIABLES, T>& lhs, const T& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() - rhs);
+    const auto& derivatives = lhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Overloaded operator- for addition between primitive types and Duals
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator-(const T& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs - rhs.getValue());
+    const auto& derivatives = rhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Original operator+ for addition between two Duals remains unchanged
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator-(const Duals<NUMVARIABLES, T>& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() - rhs.getValue());
+    for (size_t i = 0; i < NUMVARIABLES; ++i)
+    {
+         result.setDerivative(i, lhs.getDerivative(i) - rhs.getDerivative(i));
+    }
+    return result;
+}
+
+// Overloaded operator* for addition between Duals and primitive types
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator*(const Duals<NUMVARIABLES, T>& lhs, const T& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() * rhs);
+    const auto& derivatives = lhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Overloaded operator* for addition between primitive types and Duals
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator*(const T& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs * rhs.getValue());
+    const auto& derivatives = rhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Original operator* for addition between two Duals remains unchanged
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator*(const Duals<NUMVARIABLES, T>& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() * rhs.getValue());
+    for (size_t i = 0; i < NUMVARIABLES; ++i)
+    {
+         result.setDerivative(i, lhs.getValue() * rhs.getDerivative(i) + lhs.getDerivative(i) * rhs.getValue());
+    }
+    return result;
+}
+
+// Overloaded operator/ for addition between Duals and primitive types
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator/(const Duals<NUMVARIABLES, T>& lhs, const T& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() / rhs);
+    const auto& derivatives = lhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Overloaded operator/ for addition between primitive types and Duals
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator/(const T& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs / rhs.getValue());
+    const auto& derivatives = rhs.getAllDerivatives();
+    result.setAllDerivatives(derivatives);
+    return result;
+}
+
+// Original operator/ for addition between two Duals remains unchanged
+template<size_t NUMVARIABLES, typename T>
+Duals<NUMVARIABLES, T> operator/(const Duals<NUMVARIABLES, T>& lhs, const Duals<NUMVARIABLES, T>& rhs) 
+{
+    Duals<NUMVARIABLES, T> result;
+    result.setValue(lhs.getValue() / rhs.getValue());
+    for (size_t i = 0; i < NUMVARIABLES; ++i)
+    {
+         result.setDerivative(i, (lhs.getDerivative(i) * rhs.getValue() - rhs.getDerivative(i) * lhs.getValue()) / (rhs.getValue() * rhs.getValue()));
+    }
+    return result;
+}
 
 // Non-member functions for mathematical operations using the public interface
 template<size_t VARIABLES, typename U>

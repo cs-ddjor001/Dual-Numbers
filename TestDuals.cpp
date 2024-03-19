@@ -135,6 +135,110 @@ void testSingleVariableArithmeticOperators()
         assert(fabs(result.getDerivative() - expected_derivative) < EPSILON);
     }
 
+    // Test addition operator with a primitive type on the left
+    {
+        double val = 2.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = val + x;
+
+        // Check value
+        assert(fabs(result.getValue() - (2.0 + 3.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test subtraction operator with a primitive type on the left
+    {
+        double val = 5.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = val - x;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 - 3.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test multiplication operator with a primitive type on the left
+    {
+        double val = 2.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = val * x;
+
+        // Check value
+        assert(fabs(result.getValue() - (2.0 * 3.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test division operator with a primitive type on the left
+    {
+        double val = 5.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = val / x;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 / 3.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test addition operator with a primitive type on the right
+    {
+        double val = 2.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = x + val;
+
+        // Check value
+        assert(fabs(result.getValue() - (3.0 + 2.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test subtraction operator with a primitive type on the right
+    {
+        double val = 5.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = x - val;
+
+        // Check value
+        assert(fabs(result.getValue() - (3.0 - 5.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test multiplication operator with a primitive type on the right
+    {
+        double val = 2.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = x * val;
+
+        // Check value
+        assert(fabs(result.getValue() - (3.0 * 2.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
+    // Test division operator with a primitive type on the right
+    {
+        double val = 5.0;
+        Duals<1, double> x(3.0, 4.0); // Value = 3.0, Derivative = 4.0
+        Duals<1, double> result = x / val;
+
+        // Check value
+        assert(fabs(result.getValue() - (3.0 / 5.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative() - 4.0) < EPSILON);
+    }
+
     cout << "All single-variable arithmetic operator tests passed!" << endl;
 }
 
@@ -202,6 +306,126 @@ void testMultiVariableArithmeticOperators()
         assert(fabs(result.getDerivative(0) - expected_derivative0) < EPSILON);
         assert(fabs(result.getDerivative(1) - expected_derivative1) < EPSILON);
         assert(fabs(result.getDerivative(2) - expected_derivative2) < EPSILON);
+    }
+
+    // Test addition operator with a primitive type on the left
+    {
+        double val = 2.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = val + x;
+
+        // Check value
+        assert(fabs(result.getValue() - (2.0 + 5.0) < EPSILON));
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test subtraction operator with a primitive type on the left
+    {
+        double val = 5.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = val - x;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 - 5.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test multiplication operator with a primitive type on the left
+    {
+        double val = 2.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = val * x;
+
+        // Check value
+        assert(fabs(result.getValue() - (2.0 * 5.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test division operator with a primitive type on the left
+    {
+        double val = 2.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = val / x;
+
+        // Check value
+        assert(fabs(result.getValue() - (2.0 / 5.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test addition operator with a primitive type on the right
+    {
+        double val = 2.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = x + val;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 + 2.0) < EPSILON));
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test subtraction operator with a primitive type on the right
+    {
+        double val = 5.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = x - val;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 - 5.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test multiplication operator with a primitive type on the right
+    {
+        double val = 2.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = x * val;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 * 2.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
+    }
+
+    // Test division operator with a primitive type on the right
+    {
+        double val = 2.0;
+        Duals<3, double> x(5.0, {7.0, 2.0, 6.0}); // Value = 3.0, Derivative = 4.0
+        Duals<3, double> result = x / val;
+
+        // Check value
+        assert(fabs(result.getValue() - (5.0 / 2.0)) < EPSILON);
+
+        // Check derivative
+        assert(fabs(result.getDerivative(0) - 7.0) < EPSILON);
+        assert(fabs(result.getDerivative(1) - 2.0) < EPSILON);
+        assert(fabs(result.getDerivative(2) - 6.0) < EPSILON);
     }
 
     cout << "All multi-variable arithmetic operator tests passed!" << endl;
