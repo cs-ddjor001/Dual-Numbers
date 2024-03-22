@@ -1,3 +1,4 @@
+#include <vector>
 #include "Duals.h"
 
 using namespace std;
@@ -257,6 +258,54 @@ void TestTrig(float input)
         cout << "  actual dy/dx = " << derivActual << '\n';
         cout << "  numeric dy/dx = " << derivNumeric << '\n';
     }
+}
+
+template<size_t NUMVARIABLES, typename T>
+vector<T> calculateGradient(const Duals<NUMVARIABLES, T>& function, size_t m) 
+{
+    // Create a vector to store the gradient, initialized with zeros
+    vector<T> gradient(NUMVARIABLES, T());
+
+    // Calculate the number of full batches
+    size_t numBatches = NUMVARIABLES / m;
+
+    // Calculate the size of the last incomplete batch
+    size_t lastBatchSize = NUMVARIABLES % m;
+
+    // Iterate through each full batch
+    for (size_t batch = 0; batch < numBatches; ++batch) 
+    {
+        // Iterate through each variable in the batch
+        for (size_t i = 0; i < m; ++i) 
+        {
+            // Calculate the index of the current variable in the gradient vector
+            size_t variableIndex = batch * m + i;
+            
+            // Create a perturbed function by setting the derivative of the current variable to 1
+            Duals<NUMVARIABLES, T> perturbedFunction = function;
+            perturbedFunction.setDerivative(variableIndex, T(1));
+            
+            // Compute and store the derivative of the perturbed function
+            gradient[variableIndex] = perturbedFunction.getDerivative();
+        }
+    }
+
+    // Compute derivatives for the remaining variables in the last incomplete batch
+    for (size_t i = 0; i < lastBatchSize; ++i) 
+    {
+        // Calculate the index of the current variable in the gradient vector
+        size_t variableIndex = numBatches * m + i;
+        
+        // Create a perturbed function by setting the derivative of the current variable to 1
+        Duals<NUMVARIABLES, T> perturbedFunction = function;
+        perturbedFunction.setDerivative(variableIndex, T(1));
+        
+        // Compute and store the derivative of the perturbed function
+        gradient[variableIndex] = perturbedFunction.getDerivative();
+    }
+
+    // Return the computed gradient
+    return gradient;
 }
 
 int main() 
