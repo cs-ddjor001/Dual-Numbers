@@ -261,50 +261,45 @@ void TestTrig(float input)
 }
 
 template<size_t NUMVARIABLES, typename T>
-vector<T> calculateGradient(const Duals<NUMVARIABLES, T>& function, size_t m) 
+using DualsFunction = std::function<Duals<NUMVARIABLES, T>(const std::array<Duals<NUMVARIABLES, T>, NUMVARIABLES>&)>;
+// Define a type alias 'DualsFunction' that represents a function that takes an array of Duals and returns a Duals object
+// The function must accept an array of Duals with size NUMVARIABLES as its argument
+// The return type of the function is a Duals object
+
+
+// Function definition for 'computeGradient'
+// Takes three parameters:
+// 1. 'func': A function object of type 'DualsFunction' that represents the function whose gradient needs to be computed
+// 2. 'vars': An array of Duals objects representing the variables with respect to which the gradient is computed
+// 3. 'm': A size_t parameter representing the chunk size for processing variables
+// Returns an array of type 'std::array<T, NUMVARIABLES>' containing the computed gradient
+template<size_t NUMVARIABLES, typename T>
+std::array<T, NUMVARIABLES> computeGradient(const DualsFunction<NUMVARIABLES, T>& func, const std::array<Duals<NUMVARIABLES, T>, NUMVARIABLES>& vars, size_t m)
 {
-    // Create a vector to store the gradient, initialized with zeros
-    vector<T> gradient(NUMVARIABLES, T());
-
-    // Calculate the number of full batches
-    size_t numBatches = NUMVARIABLES / m;
-
-    // Calculate the size of the last incomplete batch
-    size_t lastBatchSize = NUMVARIABLES % m;
-
-    // Iterate through each full batch
-    for (size_t batch = 0; batch < numBatches; ++batch) 
+    std::array<T, NUMVARIABLES> gradient = {}; // Initialize gradient array
+    
+    // Iterate over variables in batches of size m
+    for (size_t i = 0; i < NUMVARIABLES; i += m) 
     {
-        // Iterate through each variable in the batch
-        for (size_t i = 0; i < m; ++i) 
+        std::array<Duals<NUMVARIABLES, T>, NUMVARIABLES> currentVars;
+        
+        // Compute derivatives for the current batch
+        for (size_t j = 0; j < m && i + j < NUMVARIABLES; ++j) 
         {
-            // Calculate the index of the current variable in the gradient vector
-            size_t variableIndex = batch * m + i;
-            
-            // Create a perturbed function by setting the derivative of the current variable to 1
-            Duals<NUMVARIABLES, T> perturbedFunction = function;
-            perturbedFunction.setDerivative(variableIndex, T(1));
-            
-            // Compute and store the derivative of the perturbed function
-            gradient[variableIndex] = perturbedFunction.getDerivative();
+            currentVars[j] = vars[i + j];
+        }
+        Duals<NUMVARIABLES, T> result = func(currentVars);
+        
+        // Accumulate derivatives into gradient array
+        for (size_t j = 0; j < m && i + j < NUMVARIABLES; ++j) 
+        {
+            for (size_t k = 0; k < NUMVARIABLES; ++k) 
+            {
+                gradient[k] += result.getDerivative(k);
+            }
         }
     }
-
-    // Compute derivatives for the remaining variables in the last incomplete batch
-    for (size_t i = 0; i < lastBatchSize; ++i) 
-    {
-        // Calculate the index of the current variable in the gradient vector
-        size_t variableIndex = numBatches * m + i;
-        
-        // Create a perturbed function by setting the derivative of the current variable to 1
-        Duals<NUMVARIABLES, T> perturbedFunction = function;
-        perturbedFunction.setDerivative(variableIndex, T(1));
-        
-        // Compute and store the derivative of the perturbed function
-        gradient[variableIndex] = perturbedFunction.getDerivative();
-    }
-
-    // Return the computed gradient
+    
     return gradient;
 }
 
