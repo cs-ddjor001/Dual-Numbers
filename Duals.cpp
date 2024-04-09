@@ -1,4 +1,5 @@
 #include <vector>
+#include <functional>
 #include "Duals.h"
 
 using namespace std;
@@ -260,47 +261,22 @@ void TestTrig(float input)
     }
 }
 
-template<size_t NUMVARIABLES, typename T>
-using DualsFunction = std::function<Duals<NUMVARIABLES, T>(const std::array<Duals<NUMVARIABLES, T>, NUMVARIABLES>&)>;
-// Define a type alias 'DualsFunction' that represents a function that takes an array of Duals and returns a Duals object
-// The function must accept an array of Duals with size NUMVARIABLES as its argument
-// The return type of the function is a Duals object
-
-
-// Function definition for 'computeGradient'
-// Takes three parameters:
-// 1. 'func': A function object of type 'DualsFunction' that represents the function whose gradient needs to be computed
-// 2. 'vars': An array of Duals objects representing the variables with respect to which the gradient is computed
-// 3. 'm': A size_t parameter representing the chunk size for processing variables
-// Returns an array of type 'std::array<T, NUMVARIABLES>' containing the computed gradient
-template<size_t NUMVARIABLES, typename T>
-std::array<T, NUMVARIABLES> computeGradient(const DualsFunction<NUMVARIABLES, T>& func, const std::array<Duals<NUMVARIABLES, T>, NUMVARIABLES>& vars, size_t m)
+// Define the function to calculate derivatives
+template <typename T>
+void calculateDerivatives(const std::vector<T>& variables, std::vector<std::array<T, 2>>& partialDerivatives) 
 {
-    std::array<T, NUMVARIABLES> gradient = {}; // Initialize gradient array
-    
-    // Iterate over variables in batches of size m
-    for (size_t i = 0; i < NUMVARIABLES; i += m) 
-    {
-        std::array<Duals<NUMVARIABLES, T>, NUMVARIABLES> currentVars;
-        
-        // Compute derivatives for the current batch
-        for (size_t j = 0; j < m && i + j < NUMVARIABLES; ++j) 
-        {
-            currentVars[j] = vars[i + j];
-        }
-        Duals<NUMVARIABLES, T> result = func(currentVars);
-        
-        // Accumulate derivatives into gradient array
-        for (size_t j = 0; j < m && i + j < NUMVARIABLES; ++j) 
-        {
-            for (size_t k = 0; k < NUMVARIABLES; ++k) 
-            {
-                gradient[k] += result.getDerivative(k);
-            }
-        }
+    // Iterate through variable pairs
+    for (size_t i = 0; i < variables.size(); i += 2) {
+        // Create dual numbers for the pair of variables
+        Duals<2, T> x1(variables[i], {1, 0}); // Partial derivative with respect to x1
+        Duals<2, T> x2(variables[i + 1], {0, 1}); // Partial derivative with respect to x2
+
+        // Calculate the value of the function using the pair of variables
+        T value = x1.getValue() * x2.getValue(); // Example function: f(x1, x2) = x1 * x2
+
+        // Store the partial derivatives of the pair of variables
+        partialDerivatives.push_back({x1.getDerivative(0), x2.getDerivative(1)});
     }
-    
-    return gradient;
 }
 
 int main() 
@@ -316,7 +292,21 @@ int main()
 
     Test2D(5.5f, 6.28f);
 
-    Test3D(12.7f, 7.53f, 5.01f);
+    Test3D(12.7f, 7.53f, 5.01f); 
+
+    // Example: Calculate derivatives for 8 variables
+    std::vector<float> variables = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+    std::vector<std::array<float, 2>> partialDerivatives;
+
+    // Calculate derivatives for pairs of variables
+    calculateDerivatives(variables, partialDerivatives);
+
+    // Output the partial derivatives
+    for (size_t i = 0; i < partialDerivatives.size(); ++i) {
+        std::cout << "Partial derivatives for variables " << (i * 2) + 1 << " and " << (i * 2) + 2 << ": ";
+        std::cout << "dx" << (i * 2) + 1 << " = " << partialDerivatives[i][0] << ", ";
+        std::cout << "dx" << (i * 2) + 2 << " = " << partialDerivatives[i][1] << std::endl;
+    }
 
     return 0;
 }
